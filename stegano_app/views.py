@@ -1,3 +1,4 @@
+from django.http import HttpResponse
 from django.shortcuts import render
 import stepic
 from PIL import Image # importing the Image module from the PIL library.
@@ -39,8 +40,18 @@ def encryption_view(request):
         new_image = hide_text_in_image(image, text)
 
         # save the new image in a project folder
-        image_path = 'project_folder/encrypted_images/' + 'new_' + image_file.name
-        new_image.save(image_path, format="PNG")
+
+        # image_path = 'project_folder/encrypted_images/' + 'new_' + image_file.name
+        # new_image.save(image_path, format="PNG")
+        
+        buffer = io.BytesIO()
+        new_image.save(buffer, format="PNG")
+        buffer.seek(0)  # Move to the beginning of the BytesIO buffer
+
+        # Create an HTTP response with the image data
+        response = HttpResponse(buffer, content_type='image/png')
+        response['Content-Disposition'] = f'attachment; filename="encrypted_{image_file.name}"'
+        return response
 
         message = 'Text has been encrypted in the image.'
 
